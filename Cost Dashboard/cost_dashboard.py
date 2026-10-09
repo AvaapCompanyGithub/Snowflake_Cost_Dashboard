@@ -101,6 +101,15 @@ credit_price = float(_cfg["credit_rate"])
 rate_choice = str(_cfg.get("credit_rate_label", "") or "Configured rate")
 if credit_price <= 0:
     rate_choice = "Credits only"
+
+# Rate / capacity note (matches selected credit rate)
+if credit_price <= 0 or rate_choice == "Credits only":
+    rate_note = "Dollar figures suppressed. All values reported in credits."
+else:
+    rate_note = (
+        f"${credit_price:,.2f} per credit - configured rate for {rate_choice} Edition."
+    )
+
 date_range = str(_cfg.get("default_date_range", "TODAY")).upper()
     
 # ----------------------------------------------------------------------
@@ -314,8 +323,8 @@ title_col, range_col = st.columns([3.2, 1.3])
 with title_col:
     st.markdown(
         f'<div class="masthead">{_logo_html}<h1>Cost Dashboard</h1></div>'
-        '<div class="subhead">Warehouse, query, serverless, AI, storage, '
-        "and data-transfer detail.</div>"
+        f'<div class="subhead">Warehouse, query, serverless, AI, storage, and data-transfer detail.</div>'
+        f'<div class="subhead">{rate_note}</div>'
         f'<div style="color:{MUTED};font-size:.72rem;margin:-0.35rem 0 0.15rem 0;">'
         f"Last refreshed: {st.session_state.last_refreshed.strftime('%Y-%m-%d %H:%M:%S')}</div>",
         unsafe_allow_html=True,
@@ -363,7 +372,7 @@ with range_col:
         unsafe_allow_html=True,
     )
 
-st.markdown("---")
+st.divider()
 
 # ACCOUNT_USAGE ranges are half-open; end bound is exclusive.
 p_start = start_date.strftime("%Y-%m-%d")
@@ -830,11 +839,14 @@ st.markdown(
 # Notes
 # ----------------------------------------------------------------------
 
-st.markdown("---")
+st.divider()
 
 st.markdown(
     f"""
     <div class="note">
+    Actual rates vary by cloud and region, and contracted rates may differ.
+    Treat dollar figures as indicative. Capacity remaining is measured from the
+    current contract anniversary through today, independent of the date range above.<br><br>
     ACCOUNT_USAGE views are not real time. Metering and storage lag by roughly
     2 to 3 hours, query attribution by up to 8 hours, and Cortex function usage
     by about 5 minutes. Ranges that include today or yesterday will therefore
